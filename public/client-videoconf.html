@@ -1,0 +1,27 @@
+<html>
+    <head>
+        <title>Visualizar</title>
+    </head>
+
+    <body>
+
+     <img id="play">
+
+     <div id="logger"></div>
+       
+
+      <script src="/socket.io/socket.io.js"></script>
+
+      <script>
+
+     var socket = io();
+
+     socket.on('stream',function(data){
+       var imagen = document.getElementById("play");
+       imagen.src = data;
+       document.getElementById("logger").innerHTML = data;
+     });            
+
+      </script>
+    </body>
+</html>

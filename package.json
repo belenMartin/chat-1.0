@@ -1,0 +1,24 @@
+{
+  "name": "proyecto_node",
+  "version": "1.0.0",
+  "description": "proyecto Node",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Belen Martin",
+  "license": "ISC",
+  "dependencies": {
+    "delivery": "0.0.6",
+    "express": "^4.14.1",
+    "http": "0.0.0",
+    "path": "^0.12.7",
+    "socket.io": "^1.7.3",
+    "socket.io-client": "^1.7.3",
+    "socket.io-stream": "^0.9.1",
+    "socketstream": "^0.5.3"
+  },
+  "devDependencies": {
+    "nodemon": "^1.11.0"
+  }
+}

@@ -1,0 +1,77 @@
+<html>
+    <head>
+        <title>Videoconferencia</title>
+    </head>
+
+    <body>
+
+        <canvas id="canvas" style="display:none;"></canvas>
+        <video autoplay loop id="video"></video>
+        <audio autoplay loop></audio>
+        <div id="logger"></div>
+
+     <script src="socket.io/socket.io.js"></script>
+     <script>
+
+     var socket = io();
+
+    var canvas = document.getElementById("canvas");
+
+    var context = canvas.getContext('2d');
+  
+    canvas.width = 800;
+    canvas.height = 600;
+
+    context.width = canvas.width;
+    context.height = canvas.height;
+    
+    var video = document.getElementById("video");
+
+   function logger(msg){
+    document.getElementById("logger").innerHTML = msg;
+   }
+
+   function loadCam(stream){
+     logger("Camara conectada");
+   }
+
+   function failCam(){
+       logger("Camara no conectada");
+   }
+
+   function emitirVideo(video,context){
+       context.drawImage(video,0,0,context.width,context.height);
+       socket.emit("stream",canvas.toDataURL('image/webp'));
+   }
+
+      navigator.getMedia = ( navigator.getUserMedia ||
+                       navigator.webkitGetUserMedia ||
+                       navigator.mozGetUserMedia);
+
+navigator.getMedia (
+
+   // Restricciones (contraints) *Requerido
+   {
+      video: true,
+      audio: true
+   },
+
+   // Funcion de finalizacion (Succes-Callback) *Requerido
+   function(localMediaStream) {
+      var video = document.querySelector('video');
+      video.src = window.URL.createObjectURL(localMediaStream);
+      video.onloadedmetadata = function(e) {
+         // Haz algo con el video aquí.
+      };
+      setInterval(function(){emitirVideo(video,context);},70);
+   },
+
+   // errorCallback *Opcional
+   function(err) {
+    console.log("Ocurrió el siguiente error: " + err);
+   }
+);
+
+    </script>
+    </body>
+</html>

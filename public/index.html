@@ -1,0 +1,225 @@
+<html>
+    <head>
+        <title>Chat</title>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+   <a href="./rooms/44" target="_blank" style="margin-left:1050px;">Entrar a una sala de chat</a>
+   <a href="/videoconferencia" target="_blank" style="margin-left:1050px;">Videoconferencia</a>
+   <a href="/visualizar" target="_blank" style="margin-left:1050px;">Visualizar videoconferencia</a>
+    <div id="entrarChat"></div>
+    <div id="salirChat"></div>
+    <div id="escribiendo"></div>
+    <div id="estadoUser" style="width:500px;height:300px;margin-left:820px;position:fixed;"></div>
+    <div id="enLinea" style="width:200px;height:500px;margin-top:100px;"></div>              
+
+      <div class="container">
+    <!-- Trigger the modal with a button -->
+    <center><button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#myModal" style="margin-top:-350px;" id="miBoton">Iniciar sesion</button></center>
+
+    <!-- Modal -->
+    <div class="modal fade" id="myModal" role="dialog">
+      <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+            <h4 class="modal-title">Logueate para entrar al chat</h4>
+          </div>
+          <div class="modal-body">
+            <input type="text" placeholder="Nick" id="usuario"><br><br>
+            <input type="text" placeholder="Estado" id="estado" size="50"><br><br>
+            <input type="checkbox" id="imagen1" value="<img src='./images/avatar1.jpg' width='50' height='50'>"><img src="./images/avatar1.jpg" width="50" height="50">
+            <input type="checkbox" id="imagen2" value="<img src='./images/avatar2.jpg' width='50' height='50'>"><img src="./images/avatar2.jpg" width="50" height="50">
+            <input type="checkbox" id="imagen3" value="<img src='./images/avatar3.jpg' width='50' height='50'>"><img src="./images/avatar3.jpg" width="50" height="50">
+            <input type="checkbox" id="imagen4" value="<img src='./images/avatar4.jpg' width='50' height='50'>"><img src="./images/avatar4.jpg" width="50" height="50">
+            <br><br>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal" id="botonEntrar">Entrar al chat</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <center><ul id="msg" style="margin-top:-500px;margin-left:150px;position:fixed;list-style-type:none;"></ul></center>
+  
+  <div id="emoticono" style="margin-top:-40px;" class="blockquote-reverse"></div>
+  <div id="cajaTexto" style="margin-top:-150px;margin-left:10px;;position:fixed;">
+    <input type="text" placeholder="teclee aqui su mensaje..." size="100" id="mensaje" onkeypress="enter1(event)">
+    <input type="button" value="emoticono" id="emoji">
+    <input type="button" value="Enviar" id="enviar"><br><br>
+    <input type="file" id="archivo"><br>   
+  </div>
+
+           
+   <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+   <script type="text/javascript" src="/delivery/delivery.js"></script>
+
+   <script>
+     //almaceno en una variable la llamada al metodo io() de la libreria socket.io
+      var socket = io();     
+
+      $("#cajaTexto").hide();
+
+      //cuando se haga clic en el boton de la ventana modal envio el evento nick con el nombre del usuario y el evento online con el nombre del usuario
+      //tambien envio el evento estado con el valor de la caja de texto donde se introduce el estado
+      $("#botonEntrar").click(function(){
+          socket.emit("nick",$("#usuario").val());
+          socket.emit("estado",$("#estado").val());
+          socket.emit("online",$("#usuario").val());
+
+        //cuando clico algunas de las imagenes se envia el evento avatar con el valor del checkbox
+        if($("#imagen1").prop("checked")){
+          socket.emit("avatar",$("#imagen1").val());
+        }else if($("#imagen2").prop("checked")){
+          socket.emit("avatar",$("#imagen2").val());
+        }else if($("#imagen3").prop("checked")){
+          socket.emit("avatar",$("#imagen3").val());
+        }else if($("#imagen4").prop("checked")){
+          socket.emit("avatar",$("#imagen4").val());
+        }  
+
+          $("#miBoton").hide();
+          $("#salirChat").hide();
+          $("#cajaTexto").show();
+                   
+      });
+
+     //cuando se reciba el evento nick almaceno el nombre del usuario en una variable y envio por broadcast quien se conecta
+      socket.on("nick",function(data){
+      socket.nick = data;                
+      //$("#entrarChat").text("El usuario "+data+" ha entrado al chat");
+      document.getElementById("entrarChat").innerHTML += "El usuario "+data+" ha entrado al chat<br>";
+      });
+
+     //cuando se reciba el evento online añado los usuarios conectados al chat
+      socket.on("online",function(data){
+        if(data != undefined || data != null){
+          //$("#enLinea").append("<ul><li>").text(data);
+          document.getElementById("enLinea").innerHTML += "<ul id='lin'><li id='avL'>"+data+"</li></ul><br>";
+        }
+      });               
+
+      //cuando se reciba el evento estado pongo el estado de cada usuario en el div con id estadoUser
+      socket.on("estado",function(data){
+        //$("#estadoUser").text(socket.nick+" - "+data);
+        document.getElementById("estadoUser").innerHTML += "<ul id='est'><li id='avE'>"+socket.nick+" - "+data+"</li></ul><br>"; 
+      });      
+
+      //cuando se reciba el evento avatar le añado la imagen de usuario al estado del usuario
+        socket.on("avatar",function(data){
+          console.log(data);
+          $("#enLinea").prepend(data);
+          $("#estadoUser").prepend(data);
+        });
+
+       //cuando se envia el evento message, obtengo el valor de la caja de texto y lo vacio
+        $("#enviar").click(function(){
+          socket.emit("message",$("#mensaje").val());                           
+          $("#mensaje").val("");
+          return false;
+        });
+
+    //cuando se recibe el evento message y su tratamiento lo almaceno en una funcion
+    function enter1(event){
+       var tecla = event.which || event.keyCode;
+       if(tecla == 13){
+        socket.emit("message",$("#mensaje").val());  
+        $("#mensaje").val('');
+        return false;
+      }
+   }
+       //cuando se recibe el evento message añado el mensaje del usuario a la pagina
+       socket.on("message",function(data){         
+         //$("#msg").append("<li>").text(data);
+         document.getElementById("msg").innerHTML += "<li>"+data+"</li><br>";               
+       });
+      
+    function escribir(){
+      setTimeout(function(){$("#escribiendo").fadeIn();$("#escribiendo").fadeOut();},1000);
+      
+    }
+
+    $("#mensaje").keypress(function(){
+          var contador = 0;
+          contador++;
+          if(contador == 1){
+            socket.emit("escribir",socket.nick);
+            var a = setTimeout(escribir,1000);
+          }else{
+            clearTimeout(a);
+            a = setTimeout(escribir,1000);
+          }     
+   });
+    
+    socket.on("escribir",function(data){
+      console.log("evento recibido");
+      console.log(data+" esta escribiendo");
+      $("#escribiendo").text(data+" esta escribiendo...");
+      console.log("evento terminado");
+    });
+
+    $("#archivo").on('change',function(e){
+      var file = e.originalEvent.target.files[0];
+      var reader = new FileReader();
+      reader.onload = function(evt){
+        socket.emit("user-image",evt.target.result);
+      };
+      reader.readAsDataURL(file);
+    });
+
+    socket.on("user-image",function(base64Image){
+      document.getElementById("msg").innerHTML += "<img src='"+base64Image+"' width='50' height='50'>";
+      document.getElementById("msg").innerHTML += "<a href='"+base64Image+"' target='_blank'>Descargar</a><br>";
+    });
+
+    $("#emoji").click(function(){
+    document.getElementById("emoticono").innerHTML = "<button type='button' id='uno'><img src='./images/emoticono1.jpg' width='50' height='50'></button><button type='button' id='dos'><img src='./images/emoticono2.jpg' width='50' height='50'></button><button type='button' id='tres'><img src='./images/emoticono3.jpg' width='50' height='50'></button><button type='button' id='cuatro'><img src='./images/emoticono4.jpg' width='50' height='50'></button><button type='button' id='cinco'><img src='./images/emoticono5.jpg' width='50' height='50'></button>";
+
+     $("#uno").click(function(){
+      socket.emit("emoticon",$("#uno").html());
+     });
+
+      $("#dos").click(function(){
+      socket.emit("emoticon",$("#dos").html());
+     });
+
+      $("#tres").click(function(){
+      socket.emit("emoticon",$("#tres").html());
+     });
+
+      $("#cuatro").click(function(){
+      socket.emit("emoticon",$("#cuatro").html());
+     });
+
+      $("#cinco").click(function(){
+      socket.emit("emoticon",$("#cinco").html());
+     });
+
+  });
+
+  socket.on("emoticon",function(data){
+    console.log("emoticono recibido");
+    document.getElementById("msg").innerHTML += "<li>"+data+"</li>";
+  });
+
+      //cuando se reciba el evento disc muestro a los demas quien abandona el chat
+      socket.on("disc",function(data){
+        $("#salirChat").show();
+        if(socket.nick != undefined){
+          //$("#salirChat").text("El usuario "+socket.nick+" ha abandonado el chat");
+          document.getElementById("salirChat").innerHTML += "El usuario "+data+" ha abandonado el chat<br>";
+        }
+      });
+      
+   </script>
+    </body>
+</html>

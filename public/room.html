@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <title>Sala de chat</title>
+    </head>
+
+    <body>    
+
+<div id="cajaTexto">
+    <input type="text" placeholder="teclee aqui su mensaje" id="mensaje" size="100" onkeypress="enter1(event)">
+    <input type="button" value="Enviar" id="enviar">
+</div>
+
+<ul id="msg"></ul>
+ 
+       <script type="text/javascript" src="/socket.io/socket.io.js"></script>
+       <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+       <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+       <script>
+
+         var socket = io();
+
+         $("#enviar").click(function(){
+          socket.emit("message",$("#mensaje").val());
+          $("#mensaje").val('');
+          return false;      
+         });
+         
+        function enter1(event){
+            var tecla = event.which || event.keyCode;
+            if(tecla == 13){
+                socket.emit("message",$("#mensaje").val());
+                $("#mensaje").val('');
+                return false;
+            }
+        }         
+
+         socket.on("message",function(data){
+             document.getElementById("msg").innerHTML += "<li><blockquote>"+data+"</blockquote></li>";
+         });
+
+       </script>
+   </body>
+</html>
